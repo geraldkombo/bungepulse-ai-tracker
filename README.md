@@ -350,12 +350,6 @@ Full license text: [LICENSE](LICENSE)
 
 ---
 
-## Security
-
-If you discover a security vulnerability, do not open a public issue. Email the team privately. See [SECURITY.md](SECURITY.md) for disclosure policy.
-
----
-
 ## Roadmap
 
 | Phase | Timeline | Goal |
