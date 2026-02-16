@@ -197,13 +197,13 @@ Dual-service system connected via REST APIs inside Docker.
 
 ```
 +-------------------------------------------------------------------+
-|                      DOCKER ENVIRONMENT                           |
+|                      DOCKER ENVIRONMENT                           | 
 |                                                                   |
-|  +------------------+              +---------------------------+  |
+|  +-------------------+             +---------------------------+  |
 |  |  LARAVEL STACK    |    REST     |  FASTAPI STACK            |  |
 |  |  (Steve Maloba)   |    API      |  (Derick Ochieng)         |  |
 |  |                   |             |                           |  |
-|  |  Laravel 11      <------------>  FastAPI                    |  |
+|  |  Laravel 11       <------------->  FastAPI                  |  |
 |  |  (Dashboard +     |             |  (NLP API + Admin         |  |
 |  |   Auth + Search)  |             |   + WhatsApp Webhook)     |  |
 |  |       |           |             |       |                   |  |
@@ -213,12 +213,12 @@ Dual-service system connected via REST APIs inside Docker.
 |  |   tables)         |             |   background tasks)       |  |
 |  |       |           |  trigger    |       |                   |  |
 |  |       v           |             |       v                   |  |
-|  |  n8n (Self-      <--------------  Python NLP Engine         |  |
+|  |  n8n (Self-       <--------------  Python NLP Engine        |  |
 |  |   Hosted)         |             |  spaCy + Transformers     |  |
 |  |  (Ingestion +     |             |  (NER + Classification    |  |
 |  |   Orchestration)  |             |   + Verification)         |  |
 |  |                   |             |       |                   |  |
-|  +------------------+              |       v                   |  |
+|  +-------------------+             |       v                   |  |
 |                                    |  MariaDB 11.x             |  |
 |                                    |  (8 audit/provenance      |  |
 |                                    |   tables -- append-only)  |  |
@@ -226,7 +226,7 @@ Dual-service system connected via REST APIs inside Docker.
 |                                    |       v                   |  |
 |                                    |  Twilio / Meta            |  |
 |                                    |  WhatsApp Cloud API       |  |
-|                                    +--------------------------+   |
+|                                    +---------------------------+  |
 +-------------------------------------------------------------------+
 ```
 
