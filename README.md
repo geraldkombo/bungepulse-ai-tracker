@@ -27,6 +27,7 @@ NIRU AI Hackathon 2026 | Submission Deadline: March 26, 2026
 [Architecture](#architecture) |
 [Dashboard](#dashboard-architecture) |
 [WhatsApp Bot](#whatsapp-bot) |
+[Who Uses This](#who-uses-this) |
 [Trust & Safety](#trust-safety--legal) |
 [Quick Start](#quick-start) |
 [Roadmap](#roadmap)
@@ -41,9 +42,11 @@ Kenya has early-warning systems for terrorism (NCTC), drought (NDMA), and diseas
 
 **Parliament -- where the money, laws, and power are controlled -- has nothing.**
 
-349 MPs. 67 Senators. 26 data sources. 200-400 pages of parliamentary text per sitting day. No system connects what an MP says in January to how they vote in March. No system tracks which Cabinet Secretary dodges parliamentary summons 8 out of 10 times. No system tells 1.2 million people in Kibera that the health centre promised in 2024 is now 580 days overdue.
+349 MPs. 67 Senators. 26 data sources. 200-400 pages of parliamentary text per sitting day. No system connects what an MP says in January to how they vote in March. No system tracks which Cabinet Secretary dodges parliamentary summons 8 out of 10 times. No system tells 1.2 million people in Kibera that the health centre promised in 2024 is now 580+ days overdue.
 
 BungePulse fills that gap.
+
+*AI makes it possible. Humans make it trustworthy. Citizens make it powerful.*
 
 ---
 
@@ -85,15 +88,62 @@ Every constitutional citation in BungePulse -- dashboard, WhatsApp alert, bill d
 | Art. 75 | Conduct of State officers | Accountability tracking, performance monitoring |
 | Art. 91 | Political parties | Party discipline index |
 | Art. 94-96 | Parliament's role (lawmaking) | Vote and bill tracking |
-| Art. 103 | Vacation of office (MPs) | MP removal tracking, performance monitoring |
 | Art. 114 | Public finance | Budget and bill pipeline |
 | Art. 118 | Public participation | Citizen campaigns, evidence submission |
-| Art. 122 | Quorum of Parliament | Sitting outcomes, plenary monitoring |
+| Art. 125 | Plenary sittings conducted openly | Sitting outcomes, plenary monitoring |
 | Art. 153 | Summoning before Parliament | Summons tracker, ministry grades, proxy detection |
 | Art. 201, 202, 217 | Finance, revenue, division of funds | Project budgets, CDF tracking |
 | Art. 226 | Accounts and audit | Financial tracking, Auditor-General reports |
+| Art. 229 | Removal and accountability of officials | MP performance tracking |
 
 </details>
+
+### How Constitutional Education Appears
+
+Constitutional education is woven into every channel -- not as footnotes, but as civic literacy at scale.
+
+**On the Web Dashboard (tooltip/expandable card):**
+
+```
+Article 153 -- Cabinet Secretaries Accountability
+
+Plain language: Cabinet Secretaries must appear before Parliament when
+summoned. Parliament has the power to call any CS to explain what their
+ministry is doing.
+
+Constitutional text: "A Cabinet Secretary shall attend before a committee
+of the National Assembly, or the Senate, when required by the committee..."
+
+Why it matters here: This is why the Summons Tracker exists. When a CS
+sends a proxy instead of appearing personally, Article 153 is the standard
+being tested.
+```
+
+**On WhatsApp (inline education):**
+
+```
+Your MP's Vote -- Finance Bill 2026
+Hon. Jane Doe voted YES on Feb 10
+Alignment Score: 80% (4 of 5 matching votes)
+
+Art. 94 -- Parliament makes laws and controls public funds on your behalf.
+This vote decided how your taxes are spent.
+
+Reply LATEST for today's votes
+```
+
+**On Campaign Messages / Poll Results:**
+
+```
+POLL RESULTS -- Kibera Health Centre
+1,247 citizens responded. 78% disagree with the delay.
+
+Art. 43 -- Every person has the right to the highest attainable standard
+of health, including healthcare services. A stalled health facility is a
+violation of this right.
+
+This result has been shared with the Parliamentary Committee on Health.
+```
 
 ---
 
@@ -146,10 +196,10 @@ One CS missing one summons is an incident. The same ministry sending proxies **8
 Dual-service system connected via REST APIs inside Docker.
 
 ```
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 |                      DOCKER ENVIRONMENT                           |
 |                                                                   |
-|  +------------------+              +--------------------------+   |
+|  +------------------+              +---------------------------+  |
 |  |  LARAVEL STACK    |    REST     |  FASTAPI STACK            |  |
 |  |  (Steve Maloba)   |    API      |  (Derick Ochieng)         |  |
 |  |                   |             |                           |  |
@@ -168,7 +218,7 @@ Dual-service system connected via REST APIs inside Docker.
 |  |  (Ingestion +     |             |  (NER + Classification    |  |
 |  |   Orchestration)  |             |   + Verification)         |  |
 |  |                   |             |       |                   |  |
-|  +------------------+              |       v                   |  |
+|  +------------------+             |       v                    |  |
 |                                    |  MariaDB 11.x             |  |
 |                                    |  (8 audit/provenance      |  |
 |                                    |   tables -- append-only)  |  |
@@ -177,7 +227,7 @@ Dual-service system connected via REST APIs inside Docker.
 |                                    |  Twilio / Meta            |  |
 |                                    |  WhatsApp Cloud API       |  |
 |                                    +--------------------------+   |
-+------------------------------------------------------------------+
++-------------------------------------------------------------------+
 ```
 
 ### Tech Stack
@@ -224,7 +274,7 @@ Dual-service system connected via REST APIs inside Docker.
 |-----|----------------------|-----------------------|
 | **Overview** | System health + 5-dimension security monitor | Art. 1, 10 |
 | **Recent Votes** | How Parliament voted (gender/party breakdowns) | Art. 94-96, 27 |
-| **MPs Tracker** | Individual MP accountability + commitment tracking | Art. 1, 75, 103 |
+| **MPs Tracker** | Individual MP accountability + commitment tracking | Art. 1, 75, 229 |
 | **Bills Pipeline** | Legislation progress (5-stage visual flow) | Art. 94, 114 |
 | **Summons Tracker** | Executive responsiveness + Ministry Grade Cards (A-F) | Art. 153 |
 | **Party Positions** | Party discipline index | Art. 91 |
@@ -241,7 +291,7 @@ Dual-service system connected via REST APIs inside Docker.
 
 3. **Governance Security Monitor** -- Five traffic-light cards: Political Security (3 contradictions -- Amber), Economic Security (KSh 4.2B flagged -- Red), Health Security (2 stalled facilities -- Amber), Education Security (CBC report 41 days overdue -- Red), Environmental Security (No anomalies -- Green).
 
-4. **AI Analysis Tab (Bill Detail)** -- Entity extraction, commitment detection with confidence score, cross-source verification (Hansard vs V&P vs Order Paper), semantic linking to prior speeches.
+4. **AI Analysis Tab (Bill Detail)** -- Entity extraction, commitment detection with confidence score, cross-source verification (Hansard vs V&P vs Order Paper), semantic linking to prior speeches. Constitutional Relevance section shows which articles the bill engages.
 
 5. **AI Commitment Tracker (MP Detail)** -- Promise > evidence > status. Example: *"I will fight corruption"* (Hansard Jan 15 p.23) > Voted YES (Anti-Corruption Bill, V&P Feb 6) > ALIGNED. Alignment Score: 80%. Human reviewer: Approved (R-041).
 
@@ -255,11 +305,23 @@ Dual-service system connected via REST APIs inside Docker.
 
 Features born during development -- not in any original planning document:
 
-- **Ministry Grade Cards (A-F)** -- Ministries graded on summons responsiveness: A (0-7 days, 95%+) through F (>90 days, <60%). Visually devastating when a ministry scores F.
-- **Proxy Power Map** -- When PS (Parliamentary Affairs) appears in 9 of 12 Health summons, that's not normal delegation -- it's systematic avoidance made visible.
-- **County Radar** -- Multi-committee geographic clustering. Turkana appeared in 3 committees on the same day (Energy, Lands, Roads). No journalist catches that without AI.
-- **580-Day Overdue Counter** -- Kibera Health Centre: KSh 69.5M from 3 sources (National KSh 30M + NG-CDF KSh 20M + World Bank KSh 19.5M), promised within 6 months (Jan 2024), 580+ days overdue. Updates daily.
-- **Population-Weighted Representation** -- An MP vote shows *"representing 120,000 constituents"* not just "1 of 349."
+**Ministry Grade Cards (A-F)** -- Ministries graded on summons responsiveness. Visually devastating when a ministry scores F.
+
+| Grade | Average Response Time | Response Rate |
+|-------|----------------------|---------------|
+| A | 0-7 days | 95%+ |
+| B | 8-14 days | 85-94% |
+| C | 15-30 days | 70-84% |
+| D | 31-60 days | 60-69% |
+| F | >90 days | Below 60% |
+
+**Proxy Power Map** -- When PS (Parliamentary Affairs) appears in 9 of 12 Health summons, that's not normal delegation -- it's systematic avoidance made visible.
+
+**County Radar** -- Multi-committee geographic clustering. Turkana appeared in 3 committees on the same day (Energy, Lands, Roads). No journalist catches that without AI.
+
+**580+ Day Overdue Counter** -- Kibera Health Centre: KSh 69.5M from 3 sources (National KSh 30M + NG-CDF KSh 20M + World Bank KSh 19.5M), promised within 6 months (Jan 2024), 580+ days overdue. Counter updates daily.
+
+**Population-Weighted Representation** -- An MP vote shows *"representing 120,000 constituents"* not just "1 of 349." An MP absence shows *"120,000 constituents relied on party representation rather than their direct MP."*
 
 ### Design System
 
@@ -279,6 +341,8 @@ Dark theme: `#0f172a` base, `#1e293b` surfaces, `#38bdf8` accent. Kenya colors `
 | Anomaly Detection | Rule-based checks | 5 anomaly types flagged automatically | Moment 2: Contradiction |
 
 **Confidence Gates:** >=95% auto-approve > >=80% human review > >=40% auto-flag for investigation > <40% rejected
+
+> **Honesty note:** MVP uses rule-based commitment detection (~70% recall). Fine-tuned BERT classification is Phase 2. The rule-based version works and is demonstrated live.
 
 ---
 
@@ -306,11 +370,27 @@ Kiswahili-first. 9 commands. Article 35 (access to information) at population sc
 
 Replaces X Spaces. WhatsApp polls produce **structured, measurable, constituency-level citizen voice** shareable with parliamentary committees as evidence.
 
-| Phase | Timeline | What Happens |
-|-------|----------|-------------|
-| **Day 1** | 9 AM - 6 PM | Issue verified (triple-source >=80%), poll drafted, sent to affected constituencies, media backgrounder distributed |
-| **Day 2** | 6 PM - 8 PM | Poll closes, results aggregated by constituency, broadcast to participants + media partners |
-| **Day 3** | Ongoing | Monitor institutional response, create `outcome_event` record if action taken, broadcast success alert |
+**Day 1 -- Verification + Poll Launch (Hours 0-24):**
+
+| Time | Action |
+|------|--------|
+| 9:00 AM | Issue verified (triple-source confidence >=80%) |
+| 10:00 AM | Poll question drafted, reviewed for neutrality by admin |
+| 12:00 PM | Accountability poll sent via WhatsApp to affected constituencies |
+| 3:00 PM | Media backgrounder distributed to journalists/CSOs with verified evidence |
+| 6:00 PM | Reminder to non-responders -- poll closes tomorrow 6 PM |
+
+**Day 2 -- Results + Escalation (Hours 24-48):**
+
+| Time | Action |
+|------|--------|
+| 6:00 PM | Poll closes automatically |
+| 7:00 PM | Results aggregated by constituency |
+| 8:00 PM | Results broadcast to all participants + media partners |
+
+**Day 3 -- Outcome Tracking (Hours 48+):**
+
+Monitor for institutional response. Create `outcome_event` record if ministry/committee responds. Broadcast success alert if action is taken.
 
 ---
 
@@ -350,6 +430,22 @@ Every decision logged immutably: reviewer ID, timestamp, action, reasoning, IP h
 
 ---
 
+## What BungePulse Does NOT Do
+
+Boundaries are survival infrastructure. These are non-negotiable.
+
+| BungePulse Never... | Why |
+|---------------------|-----|
+| Publishes MP phone numbers or says "contact your MP" | Prevents harassment, maintains institutional posture |
+| Broadcasts off-site committee venue locations to the public | Physical security risk for officials and witnesses |
+| Makes individual predictions ("this MP will vote against...") | Profiling is accusation, not accountability |
+| Uses the words "broke promise", "lied", or "corrupt" | Defamation risk -- always "voted differently from stated position" |
+| Publishes AI-generated claims without human approval | One hallucination destroys all credibility permanently |
+| Shares citizen data with industry clients or anyone else | Privacy is constitutional (Art. 31) and non-negotiable |
+| Makes endorsements or rankings during election periods | 90-day pre-election lockdown protocol |
+
+---
+
 ## 10 Invisible Constituencies
 
 Stakeholders missing from all original planning. Each requires specific dashboard design.
@@ -369,6 +465,8 @@ Stakeholders missing from all original planning. Each requires specific dashboar
 | 9 | **Diplomatic Missions** | Economic Security: governance assessments affect investment | API/About page for international-grade credibility |
 | 10 | **Children & Future Generations** | All dimensions: today's debt is tomorrow's burden | Intergenerational Impact flag on 25-year commitments (Art. 53) |
 
+*Parliament makes decisions about all of them. We make sure all of them know.*
+
 ---
 
 ## Prediction Policy
@@ -384,6 +482,22 @@ Historical patterns from 4 years of parliamentary voting data (2022-2026):
 3. Constituencies where CDF utilization drops below 40% in H1 historically don't recover by year-end
 4. When a CS promises to table a report "next month" and doesn't -- 78% chance they won't table it at all this session
 5. FLLoCA-type devolved projects missing first milestone by 30+ days -- 65% chance of stalling completely
+
+### What a Risk Signal Looks Like in the UI
+
+```
+RISK SIGNAL -- Finance Bill 2026
+Pattern match detected
+
+This bill has been deferred twice, has 58% party alignment, and faces
+3 pending amendments.
+
+Historical pattern: Bills matching this profile pass at Third Reading
+only 31% of the time.
+
+This is a statistical pattern, not a prediction about any individual
+MP's vote. Sources: 4 years of parliamentary voting data (2022-2026)
+```
 
 ### Banned: Individual Predictions
 
@@ -450,6 +564,24 @@ Three actual parliamentary committee alerts from **February 12, 2026** replaced 
 
 ---
 
+## Who Uses This
+
+The same data that empowers citizens is valuable to institutions that need parliamentary intelligence. *The intelligence that protects democracy also funds it.*
+
+| Tier | Audience | What They Get | Cost |
+|------|----------|---------------|------|
+| **Citizen** | 29M Kenyans | WhatsApp bot (9 commands), dashboard (public view), basic alerts | Free forever (Art. 35) |
+| **Newsroom** | Media houses | Journalist API, bulk exports, webhook alerts, embeddable widgets, weekly briefing PDF | KSh 50K/year |
+| **CSO** | Civil society | Thematic dashboards, campaign tools, outcome evidence reports, donor-ready impact metrics | KSh 30K/year |
+| **Industry** | Private sector | Sector-specific legislative tracking, regulatory pipeline, risk signals, custom API | KSh 150K/year |
+| **Research** | Academia | Historical data access, bulk datasets, custom queries, longitudinal analysis | By arrangement |
+
+**9 industry buyer categories:** Oil/Gas/Extractives, Banking/Financial Services, Telecommunications, Real Estate/Infrastructure, International Development/Donors, Law Firms/Lobbyists, Independent Commissions (EACC, Auditor-General), Trade Unions/Professional Bodies, Foreign Diplomatic Missions.
+
+**Industry access safety principle:** Industries receive the same PUBLIC parliamentary data that citizens see. They get it faster, filtered, and analysed -- that's the paid value. They do NOT receive citizen data, predictive claims about individual MPs, draft alerts before human review, or ability to suppress published data.
+
+---
+
 ## Trust, Safety & Legal
 
 ### Legal Disclaimer
@@ -491,13 +623,15 @@ Off-site committee meetings: public channels show committee name, date, agenda, 
 
 | Risk | Mitigation |
 |------|-----------|
-| Parliament turns off the data tap | SHA-256 archive of all source documents, data resilience plan |
-| Legal exposure | Factual framing only, pro-bono legal partnerships, disclaimers |
-| Personal targeting of team | Register as organization, multiple admins, no single point of failure |
+| Parliament turns off the data tap | SHA-256 archive of all source documents, data resilience plan, degrade gracefully with "Source delayed" status |
+| Legal exposure | Factual framing only ("voted differently from stated position"), pro-bono legal partnerships (Katiba Institute, ARTICLE 19, ICJ-Kenya) |
+| Personal targeting of team | Register as organization, multiple admins, team email, no single point of failure |
 | Electoral weaponization | 90-day pre-election lockdown protocol |
-| AI hype vs reality gap | Honest positioning: rule-based MVP, BERT is Phase 2 |
-| It works and nobody cares | Lead with Kibera (580 days), prove outcomes not just transparency |
-| Zero real user testing | 15 structured interviews planned post-hackathon |
+| AI hype vs reality gap | Honest positioning: rule-based MVP (~70% recall), BERT is Phase 2. Show the working demo. |
+| It works and nobody cares | Lead with Kibera (580+ days), prove outcomes not just transparency |
+| Zero real user testing | 15 structured interviews planned post-hackathon before production code |
+
+> *What keeps us up at night? That it works well enough to threaten powerful people, but isn't yet resilient enough to survive their response. That's why we built for verification, auditability, and institutional trust from day one -- not as features, but as survival infrastructure.*
 
 ---
 
@@ -664,12 +798,12 @@ Milestones 2 & 3 run in parallel (Steve handles ingestion while Derick builds NL
 
 Two frameworks that shaped every design decision:
 
-**Dr. David Dixon's MIT Framework -- AI as Teammate** (NIRU AI Symposium, January 2026): AI accelerates human capability 100x faster than manual methods, but humans retain final authority over all high-stakes outputs. This is why the Golden Rule exists.
+**Dr. David Dixon's MIT Framework -- AI as Teammate** (NIRU AI Symposium, January 2026): AI accelerates human capability 100x faster than manual methods, but humans retain final authority over all high-stakes outputs that could impact institutional stability, political tensions, or citizen mobilization. This produced BungePulse's Golden Rule: AI flags and drafts. Humans approve all high-stakes outputs. AI is the engine. Humans are the steering wheel and the brakes.
 
 **Lorna Okola's Three Pillars -- Google DeepMind Africa:**
 - **Stay Curious** -- Process 400 pages daily because patterns hide in Hansard
-- **Build With Empathy** -- WhatsApp-first because that's where 29M Kenyans are, not Silicon Valley
-- **Turn Constraints Into Advantages** -- Kenya's constraints are prompt designs; the zero-cost stack makes the system replicable by any country
+- **Build With Empathy** -- WhatsApp-first because that's where 29M Kenyans are, not Silicon Valley. Build for your mothers, aunties, fathers -- not for tech conferences.
+- **Turn Constraints Into Advantages** -- Kenya's constraints are prompt designs. The zero-cost stack isn't a limitation -- it's what makes the system replicable by any country at zero cost.
 
 ---
 
