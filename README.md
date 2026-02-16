@@ -67,26 +67,26 @@ BungePulse runs as a dual-service system connected via REST APIs inside Docker.
 |  |   Auth + Search) |             |   + WhatsApp Webhook)     |  |
 |  |       |          |             |       |                   |  |
 |  |       v          |             |       v                   |  |
-|  |  MySQL 8.0       |             |  Celery + Redis 7.x      |  |
-|  |  (Canonical      |             |  (Background Tasks +     |  |
+|  |  MySQL 8.0       |             |  Celery + Redis 7.x       |  |
+|  |  (Canonical      |             |  (Background Tasks +      |  |
 |  |   Data Store)    |             |   Scheduling)             |  |
 |  |       |          |             |       |                   |  |
 |  |       v          |  trigger    |       v                   |  |
-|  |  n8n (Self-     <--------------  Python NLP Engine        |  |
-|  |   Hosted)        |             |  spaCy + Transformers    |  |
-|  |  (Ingestion +    |             |  (Entity Extraction +    |  |
-|  |   Orchestration) |             |   Classification +       |  |
+|  |  n8n (Self-     <--------------  Python NLP Engine         |  |
+|  |   Hosted)        |             |  spaCy + Transformers     |  |
+|  |  (Ingestion +    |             |  (Entity Extraction +     |  |
+|  |   Orchestration) |             |   Classification +        |  |
 |  |                  |             |   Verification)           |  |
 |  +------------------+             |       |                   |  |
 |                                   |       v                   |  |
-|                                   |  MariaDB 11.x            |  |
-|                                   |  (Audit Logs +           |  |
-|                                   |   Provenance Tracking)   |  |
+|                                   |  MariaDB 11.x             |  |
+|                                   |  (Audit Logs +            |  |
+|                                   |   Provenance Tracking)    |  |
 |                                   |       |                   |  |
 |                                   |       v                   |  |
 |                                   |  Twilio / Meta            |  |
 |                                   |  WhatsApp Cloud API       |  |
-|                                   +--------------------------+  |
+|                                   +--------------------------+   |
 +------------------------------------------------------------------+
 ```
 
