@@ -196,38 +196,38 @@ One CS missing one summons is an incident. The same ministry sending proxies **8
 Dual-service system connected via REST APIs inside Docker.
 
 ```
-+-------------------------------------------------------------------+
-|                      DOCKER ENVIRONMENT                           | 
-|                                                                   |
-|  +-------------------+             +---------------------------+  |
-|  |  LARAVEL STACK    |    REST     |  FASTAPI STACK            |  |
-|  |  (Steve Maloba)   |    API      |  (Derick Ochieng)         |  |
-|  |                   |             |                           |  |
-|  |  Laravel 11       <------------->  FastAPI                  |  |
-|  |  (Dashboard +     |             |  (NLP API + Admin         |  |
-|  |   Auth + Search)  |             |   + WhatsApp Webhook)     |  |
-|  |       |           |             |       |                   |  |
-|  |       v           |             |       v                   |  |
-|  |  MySQL 8.0        |             |  Celery + Redis 7.x       |  |
-|  |  (14 canonical    |             |  (6 AM daily pipeline +   |  |
-|  |   tables)         |             |   background tasks)       |  |
-|  |       |           |  trigger    |       |                   |  |
-|  |       v           |             |       v                   |  |
-|  |  n8n (Self-       <--------------  Python NLP Engine        |  |
-|  |   Hosted)         |             |  spaCy + Transformers     |  |
-|  |  (Ingestion +     |             |  (NER + Classification    |  |
-|  |   Orchestration)  |             |   + Verification)         |  |
-|  |                   |             |       |                   |  |
-|  +-------------------+             |       v                   |  |
-|                                    |  MariaDB 11.x             |  |
-|                                    |  (8 audit/provenance      |  |
-|                                    |   tables -- append-only)  |  |
-|                                    |       |                   |  |
-|                                    |       v                   |  |
-|                                    |  Twilio / Meta            |  |
-|                                    |  WhatsApp Cloud API       |  |
-|                                    +---------------------------+  |
-+-------------------------------------------------------------------+
++----------------------------------------------------------------------+
+|                         DOCKER ENVIRONMENT                           |
+|                                                                      |
+|  +----------------------+             +---------------------------+  |
+|  |  LARAVEL STACK       |    REST     |  FASTAPI STACK            |  |
+|  |  (Steve Maloba)      |    API      |  (Derick Ochieng)         |  |
+|  |                      |             |                           |  |
+|  |  Laravel 11          <------------>  FastAPI                   |  |
+|  |  (Dashboard +        |             |  (NLP API + Admin         |  |
+|  |   Auth + Search)     |             |   + WhatsApp Webhook)     |  |
+|  |       |              |             |       |                   |  |
+|  |       v              |             |       v                   |  |
+|  |  MySQL 8.0           |             |  Celery + Redis 7.x       |  |
+|  |  (14 canonical       |             |  (6 AM daily pipeline +   |  |
+|  |   tables)            |             |   background tasks)       |  |
+|  |       |              |   trigger   |       |                   |  |
+|  |       v              |             |       v                   |  |
+|  |  n8n (Self-          <--------------  Python NLP Engine        |  |
+|  |   Hosted)            |             |  spaCy + Transformers     |  |
+|  |  (Ingestion +        |             |  (NER + Classification    |  |
+|  |   Orchestration)     |             |   + Verification)         |  |
+|  |                      |             |       |                   |  |
+|  +----------------------+             |       v                   |  |
+|                                       |  MariaDB 11.x             |  |
+|                                       |  (8 audit/provenance      |  |
+|                                       |   tables -- append-only)  |  |
+|                                       |       |                   |  |
+|                                       |       v                   |  |
+|                                       |  Twilio / Meta            |  |
+|                                       |  WhatsApp Cloud API       |  |
+|                                       +---------------------------+  |
++----------------------------------------------------------------------+
 ```
 
 ### Tech Stack
