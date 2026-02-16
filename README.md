@@ -218,7 +218,7 @@ Dual-service system connected via REST APIs inside Docker.
 |  |  (Ingestion +     |             |  (NER + Classification    |  |
 |  |   Orchestration)  |             |   + Verification)         |  |
 |  |                   |             |       |                   |  |
-|  +------------------+             |       v                    |  |
+|  +------------------+              |       v                   |  |
 |                                    |  MariaDB 11.x             |  |
 |                                    |  (8 audit/provenance      |  |
 |                                    |   tables -- append-only)  |  |
