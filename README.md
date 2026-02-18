@@ -820,7 +820,7 @@ Milestones 2 & 3 run in parallel (Steve handles ingestion while Derick builds NL
 
 | Name | Role | Systems |
 |------|------|---------|
-| **Gerald Kombo** | Team Lead | Project Lead |
+| **Gerald Kombo** | Team Lead | Project Coordination |
 | **Derick Ochieng** | Backend Engineer | FastAPI, Celery, spaCy NLP, WhatsApp bot, 18 DB tables, Docker |
 | **Steve Maloba** | Frontend Engineer | Laravel dashboard, n8n workflows, Meilisearch, Blade/Tailwind UI |
 
