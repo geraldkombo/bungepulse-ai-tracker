@@ -1,5 +1,6 @@
 # bungepulse-ai-tracker
-AI parliamentary accountability tracker for Kenya. Ingests Hansard, Votes &amp; Proceedings, and Order Papers. Uses spaCy and transformers for entity extraction and commitment detection. Built with Laravel, FastAPI, Celery, Redis, MySQL, MariaDB, n8n, and Docker. NIRU AI Hackathon 2026.
+AI parliamentary accountability tracker for Kenya. Ingests Hansard, Votes & Proceedings, and Order Papers. Uses spaCy and transformers for entity extraction and commitment detection. Built with Laravel, FastAPI, Celery, Redis, MariaDB, n8n, and Docker. NIRU AI Hackathon 2026.
+
 <div align="center">
 
 # BungePulse
@@ -10,7 +11,7 @@ AI parliamentary accountability tracker for Kenya. Ingests Hansard, Votes &amp; 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB.svg?logo=python&logoColor=white)](https://python.org)
 [![PHP 8.3](https://img.shields.io/badge/PHP-8.3-777BB4.svg?logo=php&logoColor=white)](https://php.net)
 [![Laravel 11](https://img.shields.io/badge/Laravel-11-FF2D20.svg?logo=laravel&logoColor=white)](https://laravel.com)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.109+-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://docker.com)
 [![Status](https://img.shields.io/badge/Status-In_Development-yellow.svg)]()
 [![Hackathon](https://img.shields.io/badge/NIRU_AI_Hackathon-2026-1B5E20.svg)]()
@@ -111,9 +112,6 @@ Plain language: Cabinet Secretaries must appear before Parliament when
 summoned. Parliament has the power to call any CS to explain what their
 ministry is doing.
 
-Constitutional text: "A Cabinet Secretary shall attend before a committee
-of the National Assembly, or the Senate, when required by the committee..."
-
 Why it matters here: This is why the Summons Tracker exists. When a CS
 sends a proxy instead of appearing personally, Article 153 is the standard
 being tested.
@@ -129,7 +127,7 @@ Alignment Score: 80% (4 of 5 matching votes)
 Art. 94 -- Parliament makes laws and controls public funds on your behalf.
 This vote decided how your taxes are spent.
 
-Reply LATEST for today's votes
+Reply LEO for today's votes
 ```
 
 **On Campaign Messages / Poll Results:**
@@ -193,62 +191,82 @@ One CS missing one summons is an incident. The same ministry sending proxies **8
 
 ## Architecture
 
-Dual-service system connected via REST APIs inside Docker.
+Dual-service system sharing one MariaDB instance, connected via REST APIs inside Docker.
 
 ```
 +----------------------------------------------------------------------+
 |                         DOCKER ENVIRONMENT                           |
+|                     Network: bungepulse (bridge)                     |
 |                                                                      |
 |  +----------------------+             +---------------------------+  |
 |  |  LARAVEL STACK       |    REST     |  FASTAPI STACK            |  |
 |  |  (Steve Maloba)      |    API      |  (Derick Ochieng)         |  |
 |  |                      |             |                           |  |
-|  |  Laravel 11          <------------>  FastAPI                   |  |
+|  |  Laravel 11          <------------>  FastAPI 0.109             |  |
 |  |  (Dashboard +        |             |  (NLP API + Admin         |  |
 |  |   Auth + Search)     |             |   + WhatsApp Webhook)     |  |
 |  |       |              |             |       |                   |  |
 |  |       v              |             |       v                   |  |
-|  |  MySQL 8.0           |             |  Celery + Redis 7.x       |  |
-|  |  (14 canonical       |             |  (6 AM daily pipeline +   |  |
-|  |   tables)            |             |   background tasks)       |  |
-|  |       |              |   trigger   |       |                   |  |
-|  |       v              |             |       v                   |  |
+|  |  Meilisearch         |             |  Celery + Redis 7.x      |  |
+|  |  (Full-text search)  |             |  (6 AM daily pipeline +   |  |
+|  |       |              |   trigger   |   background tasks)       |  |
+|  |       v              |             |       |                   |  |
 |  |  n8n (Self-          <--------------  Python NLP Engine        |  |
 |  |   Hosted)            |             |  spaCy + Transformers     |  |
-|  |  (Ingestion +        |             |  (NER + Classification    |  |
-|  |   Orchestration)     |             |   + Verification)         |  |
-|  |                      |             |       |                   |  |
-|  +----------------------+             |       v                   |  |
-|                                       |  MariaDB 11.x             |  |
-|                                       |  (8 audit/provenance      |  |
-|                                       |   tables -- append-only)  |  |
-|                                       |       |                   |  |
-|                                       |       v                   |  |
-|                                       |  Twilio / Meta            |  |
-|                                       |  WhatsApp Cloud API       |  |
-|                                       +---------------------------+  |
+|  |  (Manual ingestion   |             |  (NER + Classification    |  |
+|  |   + monitoring)      |             |   + Verification)         |  |
+|  |                      |             |                           |  |
+|  +----------+-----------+             +-------------+-------------+  |
+|             |                                       |                |
+|             |          +------------------+         |                |
+|             +--------->|   MariaDB 11.x   |<--------+                |
+|                        |   (ONE shared    |                          |
+|                        |    database)     |                          |
+|                        |                  |                          |
+|                        |  18 canonical    |                          |
+|                        |  tables (Derick) |                          |
+|                        |  + Laravel's own |                          |
+|                        |  tables (Steve)  |                          |
+|                        +--------+---------+                          |
+|                                 |                                    |
+|                                 v                                    |
+|                        Twilio / Meta                                 |
+|                        WhatsApp Cloud API                            |
 +----------------------------------------------------------------------+
+
+Data Ownership:
+  Derick WRITES to 18 tables via SQLAlchemy/Alembic
+  Steve  READS  Derick's tables (read-only DB user)
+  Steve  WRITES to Laravel's own tables (users, sessions, cache)
+  Gerald OWNS   content strategy, Kiswahili templates, QA review
 ```
 
 ### Tech Stack
 
-| Component | Technology | Role | Security Dimension |
-|-----------|------------|------|--------------------|
-| Dashboard + Auth | Laravel 11 (PHP 8.3) | 10-tab dashboard, authentication, search | All five dimensions |
-| Ingestion | n8n (self-hosted) | Source ingestion workflows, scheduling triggers | Scale Detection (Moment 1) |
-| Canonical DB | MySQL 8.0 | 14 tables: MPs, bills, votes, alerts, users, campaigns | Data integrity |
-| NLP API + Admin | FastAPI (Python 3.11+) | NLP endpoints, admin review, WhatsApp webhook | Moments 1-4 |
-| Background Tasks | Celery + Redis 7.x | 6 AM daily pipeline, parallel document processing | Automated monitoring |
-| NLP Engine | spaCy + transformers | Parliamentary NER, classification, semantic matching | Entity extraction, linking |
-| Audit DB | MariaDB 11.x | 8 tables: immutable logs, SHA-256 hashes, provenance | Tamper-proof records |
-| Containers | Docker + Docker Compose | Repeatable setup, isolated services | Operational resilience |
+| Component | Technology | Role |
+|-----------|------------|------|
+| Dashboard + Auth | Laravel 11 (PHP 8.3) | 10-tab dashboard, authentication, Meilisearch |
+| Manual Ingestion | n8n (self-hosted) | Webhook receiver, manual re-ingestion triggers, monitoring |
+| Shared Database | MariaDB 11.x | 18 canonical tables + Laravel tables, one instance |
+| NLP API + Admin | FastAPI (Python 3.11+) | NLP endpoints, admin review, WhatsApp webhook |
+| Background Tasks | Celery 5.3 + Redis 7.x | 6 AM daily pipeline, parallel document processing |
+| NLP Engine | spaCy 3.7 + sentence-transformers | Parliamentary NER, classification, semantic matching |
+| Search | Meilisearch | Full-text search for dashboard |
+| Containers | Docker + Docker Compose | Repeatable setup, isolated services, shared network |
+
+### Key Integration Rules
+
+- **One database:** MariaDB 11.x. Steve connects with a read-only user. No separate MySQL.
+- **One network:** All Docker containers on `bungepulse` bridge network.
+- **One scraping schedule:** Celery beat at 6:00 AM daily. n8n handles manual/webhook triggers only.
+- **One API contract:** Steve's Laravel calls Derick's FastAPI endpoints. All data mutations go through the API.
 
 ---
 
 ## The Daily Pipeline
 
 ```
-06:00 AM  Ingestion ......... Download + normalize from 26 parliamentary sources
+06:00 AM  Ingestion ......... Celery downloads + normalizes from 26 parliamentary sources
           Archival .......... Store raw documents + SHA-256 content hashes
           NLP ............... Entity extraction + commitment candidate detection
           Linking ........... Semantic similarity: speech > bill > vote chains
@@ -333,7 +351,7 @@ Dark theme: `#0f172a` base, `#1e293b` surfaces, `#38bdf8` accent. Kenya colors `
 
 | Step | Technology | What It Does | Security Moment |
 |------|-----------|-------------|-----------------|
-| Entity Extraction | spaCy + custom NER | Extracts MP names, bill titles, committees, counties | Moment 1: Scale |
+| Entity Extraction | spaCy 3.7 + custom NER | Extracts MP names, bill titles, committees, counties | Moment 1: Scale |
 | Commitment Detection | Rule-based patterns (MVP) | Flags "I commit", "I will ensure", "we shall" + confidence scores | Moment 3: Linking |
 | Semantic Matching | sentence-transformers (all-MiniLM-L6-v2) | Speech-to-bill similarity for evidence chains | Moment 3: Linking |
 | Verification | Custom Python engine | Hansard x V&P x Order Papers cross-check | Moment 2: Contradiction |
@@ -396,21 +414,30 @@ Monitor for institutional response. Create `outcome_event` record if ministry/co
 
 ## Data Model
 
-### MySQL (Laravel) -- 14 Canonical Tables
+### MariaDB 11.x -- One Shared Instance
+
+**Derick's 18 tables** (managed via SQLAlchemy + Alembic):
 
 ```
-constituencies  mps  sitting_days  documents  bills_or_motions
-vote_events  mp_votes  speech_segments  alerts  whatsapp_users
-polls  poll_responses  campaigns  outcome_events
+constituencies       mps                 sitting_days
+documents            speech_segments     commitment_candidates
+bills_or_motions     vote_events         mp_votes
+evidence_links       verification_results review_decisions
+alerts               whatsapp_users      polls
+poll_responses       campaigns           outcome_events
 ```
 
-### MariaDB (FastAPI) -- 8 Audit/Provenance Tables
+**Steve's Laravel tables** (managed via `php artisan migrate`):
 
 ```
-commitment_candidates  evidence_links  verification_results
-review_decisions  nlp_run_logs  anomaly_flags
-content_hashes  provenance_chains
+users                sessions            cache
+cache_locks          jobs                failed_jobs
+password_reset_tokens
 ```
+
+**Database access:**
+- Derick's FastAPI + Celery: full read/write via `bungepulse` user
+- Steve's Laravel: read-only on Derick's 18 tables, full access on Laravel's own tables via `bungepulse_readonly` user
 
 **Audit principle:** `review_decisions` is append-only. Source documents archived with SHA-256 content hashes. No record can be deleted or modified after creation.
 
@@ -558,7 +585,7 @@ Three actual parliamentary committee alerts from **February 12, 2026** replaced 
 4. **Turkana in ALL THREE committees** -- County Radar justified instantly. One county, three committees, same day.
 5. **Committees meet outside Parliament** -- Hilton Garden Inn, Machakos is nowhere near Bunge Tower. Venue tracking with off-site flags required.
 6. **FLLoCA is real devolved funds** -- Perfect demo data for Projects view. Budget-to-ground tracking.
-7. **Three new gap brief items** -- Joint badge (1.3), County Radar (4.4), Expanded entity types (4.5).
+7. **Three new gap brief items** -- Joint badge, County Radar, Expanded entity types.
 
 </details>
 
@@ -575,8 +602,6 @@ The same data that empowers citizens is valuable to institutions that need parli
 | **CSO** | Civil society | Thematic dashboards, campaign tools, outcome evidence reports, donor-ready impact metrics | KSh 30K/year |
 | **Industry** | Private sector | Sector-specific legislative tracking, regulatory pipeline, risk signals, custom API | KSh 150K/year |
 | **Research** | Academia | Historical data access, bulk datasets, custom queries, longitudinal analysis | By arrangement |
-
-**9 industry buyer categories:** Oil/Gas/Extractives, Banking/Financial Services, Telecommunications, Real Estate/Infrastructure, International Development/Donors, Law Firms/Lobbyists, Independent Commissions (EACC, Auditor-General), Trade Unions/Professional Bodies, Foreign Diplomatic Missions.
 
 **Industry access safety principle:** Industries receive the same PUBLIC parliamentary data that citizens see. They get it faster, filtered, and analysed -- that's the paid value. They do NOT receive citizen data, predictive claims about individual MPs, draft alerts before human review, or ability to suppress published data.
 
@@ -649,26 +674,52 @@ git clone https://github.com/geraldkombo/bungepulse-ai-tracker.git
 cd bungepulse-ai-tracker
 
 cp .env.example .env
-# Edit .env with MySQL/MariaDB passwords and WhatsApp API credentials
+# Edit .env with MariaDB passwords and WhatsApp API credentials
 
+# Start all services
 docker-compose up --build
 
-# Run migrations (once containers are up)
-docker-compose exec laravel php artisan migrate
-docker-compose exec fastapi alembic upgrade head
+# Wait 30 seconds for MariaDB initialization, then:
 
-# Seed demo data (real Feb 12, 2026 parliamentary committee records)
+# Run Derick's migrations + seeds
+docker-compose exec fastapi alembic upgrade head
+docker-compose exec fastapi python -m app.data.seed.load_constituencies
+
+# Run Steve's migrations + seeds
+docker-compose exec laravel php artisan migrate
 docker-compose exec laravel php artisan db:seed
 ```
 
 ### Access Points
 
-| Service | URL |
-|---------|-----|
-| Dashboard | `http://localhost:8000` |
-| Admin Console | `http://localhost:8001/admin` |
-| n8n Orchestration | `http://localhost:5678` |
-| FastAPI Docs | `http://localhost:8001/docs` |
+| Service | URL | Owner |
+|---------|-----|-------|
+| Dashboard | `http://localhost:8000` | Steve |
+| FastAPI Docs | `http://localhost:8001/docs` | Derick |
+| n8n Orchestration | `http://localhost:5678` | Steve |
+| Meilisearch | `http://localhost:7700` | Steve |
+| MariaDB | `localhost:3307` | Derick |
+
+### Verify Everything Works
+
+```bash
+# API health
+curl http://localhost:8001/health
+# Expected: {"status": "healthy", "db": "connected", "redis": "connected"}
+
+# Database has 290 constituencies
+docker exec -it bungepulse-db mariadb -ubungepulse -pbungepulsesecret bungepulse \
+  -e "SELECT COUNT(*) FROM constituencies"
+# Expected: 290
+
+# Redis is alive
+docker exec -it bungepulse-redis redis-cli ping
+# Expected: PONG
+
+# Celery worker is ready
+docker logs bungepulse-celery-worker --tail 5
+# Expected: "celery@... ready"
+```
 
 ---
 
@@ -678,41 +729,58 @@ docker-compose exec laravel php artisan db:seed
 bungepulse-ai-tracker/
 |-- README.md
 |-- ARCHITECTURE.md
-|-- LICENSE                          # AGPL-3.0
-|-- CONSTITUTIONAL_EDUCATION.md      # 19-article education library
-|-- docker-compose.yml
+|-- LICENSE                              # AGPL-3.0
+|-- CONSTITUTIONAL_EDUCATION.md          # 19-article education library
+|-- docker-compose.yml                   # ALL services in one file
 |-- .env.example
 |
-|-- laravel/                         # Steve Maloba
+|-- laravel/                             # Steve Maloba
 |   |-- app/
 |   |   |-- Http/Controllers/
 |   |   |-- Models/
 |   |   +-- Services/
 |   |-- database/migrations/
-|   |-- resources/views/             # 10-tab dashboard (Blade templates)
+|   |-- resources/views/                 # 10-tab dashboard (Blade templates)
 |   |-- routes/
 |   +-- Dockerfile
 |
-|-- fastapi/                         # Derick Ochieng
+|-- fastapi/                             # Derick Ochieng
 |   |-- app/
-|   |   |-- api/
-|   |   |-- models/
-|   |   |-- nlp/
-|   |   |   |-- entity_extraction.py
-|   |   |   |-- commitment_detection.py
-|   |   |   |-- semantic_matching.py
-|   |   |   |-- verification_engine.py
-|   |   |   +-- anomaly_detection.py
-|   |   |-- celery_tasks.py
-|   |   +-- whatsapp/
-|   |-- alembic/
+|   |   |-- api/                         # FastAPI routers
+|   |   |-- models/                      # 18 SQLAlchemy models
+|   |   |-- core/
+|   |   |   |-- nlp/
+|   |   |   |   |-- ner.py                       # Custom Kenyan parliamentary NER
+|   |   |   |   |-- commitment_classifier.py     # 7-slot frame extractor
+|   |   |   |   |-- semantic_matcher.py          # Sentence embeddings
+|   |   |   |   +-- hansard_parser.py            # PDF structured data
+|   |   |   |-- verification/
+|   |   |   |   |-- cross_source.py              # Triple-source comparison
+|   |   |   |   +-- anomaly_detection.py         # 5 anomaly types
+|   |   |   |-- patterns/
+|   |   |   |   |-- proxy_analysis.py            # 90-day ministry tracking
+|   |   |   |   +-- county_radar.py              # Multi-committee clustering
+|   |   |   +-- whatsapp/
+|   |   |       |-- bot.py                       # 9 Kiswahili commands
+|   |   |       |-- templates.py                 # Response templates
+|   |   |       +-- session.py                   # Redis-backed context
+|   |   +-- tasks/
+|   |       |-- celery_app.py                    # Celery configuration
+|   |       |-- daily_pipeline.py                # 6:00 AM job
+|   |       +-- scraper.py                       # Parliament PDF downloader
+|   |-- alembic/                         # Database migrations
+|   |-- data/
+|   |   |-- training/                    # NER training data
+|   |   |-- models/                      # Saved spaCy models
+|   |   +-- seed/                        # constituencies.csv
+|   |-- tests/
 |   +-- Dockerfile
 |
 |-- n8n/
-|   +-- workflows/                   # Ingestion + orchestration flows
+|   +-- workflows/                       # Manual ingestion + monitoring flows
 |
 |-- docs/
-|   |-- API.md
+|   |-- API.md                           # Full endpoint documentation
 |   |-- DEPLOYMENT.md
 |   |-- LEGAL.md
 |   |-- PREDICTION_POLICY.md
@@ -720,7 +788,7 @@ bungepulse-ai-tracker/
 |
 +-- demo/
     |-- screenshots/
-    |-- sample-data/                 # Real Feb 12, 2026 committee data
+    |-- sample-data/                     # Real Feb 12, 2026 committee data
     +-- video/
 ```
 
@@ -728,128 +796,46 @@ bungepulse-ai-tracker/
 
 ## Roadmap
 
-### 11 Milestones -- 39 Days -- Feb 16 to Mar 26, 2026
+### 11 Milestones -- 36 Days -- Feb 18 to Mar 26, 2026
 
 | # | Milestone | Dates | Priority | Owner |
 |---|-----------|-------|----------|-------|
-| 1 | Infrastructure & Scaffolding | Feb 16-18 | CRITICAL | All |
+| 1 | Infrastructure & Scaffolding | Feb 18 | CRITICAL | All |
 | 2 | Data Ingestion & Document Processing | Feb 18-21 | CRITICAL | Steve + Derick |
-| 3 | NLP Engine -- Entity Extraction & Commitment Detection | Feb 18-22 | CRITICAL | Derick |
-| 4 | Cross-Source Verification & Anomaly Detection | Feb 21-24 | HIGH | Derick |
+| 3 | NLP Engine -- Entity Extraction & Commitment Detection | Feb 18-25 | CRITICAL | Derick |
+| 4 | Cross-Source Verification & Anomaly Detection | Feb 22-23 | HIGH | Derick |
 | 5 | Admin Review Console (Human-in-the-Loop) | Feb 23-25 | HIGH | Steve + Gerald |
 | 6 | Dashboard -- 10-Tab Navigation & Core Components | Feb 26-Mar 5 | CRITICAL | Steve + Gerald |
 | 7 | Pattern Detection & Ministry Responsiveness | Mar 6-9 | HIGH | Derick |
-| 8 | WhatsApp Bot -- 9 Kiswahili Commands & Poll System | Mar 10-14 | HIGH | Derick + Gerald |
+| 8 | WhatsApp Bot -- 9 Kiswahili Commands & Poll System | Mar 10-17 | HIGH | Derick + Gerald |
 | 9 | Constitutional Education Layer (19 Articles) | Mar 15-16 | MEDIUM | Gerald + Steve |
 | 10 | Real Data Integration & Kibera Project | Mar 17-20 | CRITICAL | All |
 | 11 | Demo Video, Documentation & Submission | Mar 21-26 | CRITICAL | All |
 
-Milestones 2 & 3 run in parallel (Steve handles ingestion while Derick builds NLP). Same for M4 & M5.
-
-**Deadline: March 26, 2026** -- Demo video + working system + technical documentation.
-
----
-
-## Gap Brief -- 21 Items Across 6 Themes
-
-<details>
-<summary><strong>View Complete Gap Brief</strong></summary>
-<br>
-
-**Theme 1: Bicameral Parliament & Committees**
-- 1.1 Add Senate (67 Senators, Senate votes, committee summons) -- judges will notice if absent
-- 1.2 Committee-level tracking (names, members, schedules, reports as UI components)
-- 1.3 Joint committee badge (both chambers sitting together -- strong differentiator)
-
-**Theme 2: Citizen Experience & Inclusion**
-- 2.1 Citizen feedback loop ("What did this alert make you do?")
-- 2.2 SMS fallback for non-smartphone users
-- 2.3 Multilingual (Kiswahili minimum; Turkana/Luo/Kikuyu for county alerts -- roadmap)
-- 2.4 WCAG 2.1 AA accessibility (screen readers, high contrast, voice notes)
-
-**Theme 3: Devolution & County Governance**
-- 3.1 County-level data views (filter everything by constituency/county)
-- 3.2 County budgets (revenue division, conditional grants, CDF tracking)
-- 3.3 Projects view (FLLoCA as demo data: allocation > debate > vote > implementation)
-
-**Theme 4: Power Mapping & Executive Accountability**
-- 4.1 Summons Tracker -- CS/PS attendance vs expectation (MVP killer feature)
-- 4.2 Proxy detection -- who speaks on behalf of whom, how often
-- 4.3 Unanswered questions tracker -- deferred questions by ministry with aging
-- 4.4 County Radar -- multi-committee geographic clustering (Turkana 3 committees same day)
-- 4.5 Expanded entity types -- Governors, statutory bodies, private sector in Summons
-
-**Theme 5: Data Integrity & Verification**
-- 5.1 Verification UI -- triple-source comparison shown visually
-- 5.2 Immutable audit trail -- every decision logged, SHA-256 hashed, tamper-proof
-- 5.3 Data source health dashboard -- uptime, freshness, last sync per source
-
-**Theme 6: Sustainability & Safety**
-- 6.1 Revenue model -- citizen access free forever; paid newsroom/CSO/industry tiers
-- 6.2 Electoral integrity policy -- 90-day pre-election protocol
-- 6.3 Legal shield -- disclaimers, factual framing, pro-bono legal partnership
-- 6.4 Venue disclosure policy -- tiered by audience for physical safety
-
-</details>
-
----
-
-## Philosophical Foundations
-
-Two frameworks that shaped every design decision:
-
-**Dr. David Dixon's MIT Framework -- AI as Teammate** (NIRU AI Symposium, January 2026): AI accelerates human capability 100x faster than manual methods, but humans retain final authority over all high-stakes outputs that could impact institutional stability, political tensions, or citizen mobilization. This produced BungePulse's Golden Rule: AI flags and drafts. Humans approve all high-stakes outputs. AI is the engine. Humans are the steering wheel and the brakes.
-
-**Lorna Okola's Three Pillars -- Google DeepMind Africa:**
-- **Stay Curious** -- Process 400 pages daily because patterns hide in Hansard
-- **Build With Empathy** -- WhatsApp-first because that's where 29M Kenyans are, not Silicon Valley. Build for your mothers, aunties, fathers -- not for tech conferences.
-- **Turn Constraints Into Advantages** -- Kenya's constraints are prompt designs. The zero-cost stack isn't a limitation -- it's what makes the system replicable by any country at zero cost.
-
----
-
-## Licensing
-
-**GNU Affero General Public License v3.0 (AGPL-3.0)**
-
-BungePulse is a network service. The AGPL ensures:
-- Anyone can use, modify, and distribute the source code
-- Modified versions run as public services must share source code
-- National security infrastructure stays open -- no proprietary parliamentary trackers from this codebase
-
-Full license: [LICENSE](LICENSE)
-
----
-
-## Contributing
-
-Contributions welcome under AGPL-3.0:
-
-1. Fork the repo
-2. Create a feature branch (`git checkout -b feature/your-feature`)
-3. Commit changes (`git commit -m 'Add your feature'`)
-4. Push (`git push origin feature/your-feature`)
-5. Open a Pull Request with clear description
+Milestones 2 & 3 run in parallel (Steve handles ingestion while Derick builds NLP).
 
 ---
 
 ## Team
 
-| Role | Name | Responsibility |
-|------|------|---------------|
-| **Team Lead** | Gerald Kombo | Architecture, product strategy, constitutional mapping, coordination |
-| **Dev A -- Laravel** | Steve Maloba | Laravel 11 dashboard, n8n orchestration, MySQL, Meilisearch |
-| **Dev B -- FastAPI** | Derick Ochieng | FastAPI, Celery, spaCy, MariaDB, WhatsApp API, NLP pipeline |
+| Name | Role | Systems |
+|------|------|---------|
+| **Gerald Kombo** | Team Lead |
+| **Derick Ochieng** | Backend Engineer | FastAPI, Celery, spaCy NLP, WhatsApp bot, 18 DB tables, Docker |
+| **Steve Maloba** | Frontend Engineer | Laravel dashboard, n8n workflows, Meilisearch, Blade/Tailwind UI |
+
+---
+
+## License
+
+This project is licensed under the [GNU Affero General Public License v3.0](LICENSE) -- ensuring all derivative works that serve users over a network must also be open source.
 
 ---
 
 <div align="center">
 
-**NIRU AI Hackathon 2026**
+**BungePulse** -- Because Parliament belongs to the people. And the people deserve to know.
 
-*AI processes. Humans approve. Citizens know.*
-
-*Parliament makes decisions about all of them. We make sure all of them know.*
-
-Built in Nairobi, Kenya
+*Built for the NIRU AI Hackathon 2026.*
 
 </div>
